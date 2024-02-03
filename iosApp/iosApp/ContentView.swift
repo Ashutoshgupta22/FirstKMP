@@ -5,7 +5,9 @@ struct ContentView: View {
 	let greet = Greeting().greet()
 
 	var body: some View {
-		Text(greet)
+        List(greet, id: \.self) {
+            Text($0)
+        }
 	}
 }
 
