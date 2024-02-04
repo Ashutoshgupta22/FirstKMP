@@ -2,17 +2,40 @@ import SwiftUI
 import shared
 
 struct ContentView: View {
-	let greet = Greeting().greet()
+    
+    @ObservedObject private(set) var viewModel: ViewModel
+    
+    var body: some View {
+        ListView(phrases: viewModel.greetings)
+            .onAppear{self.viewModel.startObserving()}
+    }
+}
 
-	var body: some View {
-        List(greet, id: \.self) {
+extension ContentView {
+    @MainActor
+    class ViewModel: ObservableObject {
+        
+        @Published var greetings: Array<String> = []
+        
+        func startObserving() {
+            
+            Task{
+                for await phrases in Greeting().greet() {
+                    self.greetings.append(phrases)
+                }
+            }
+            
+        }
+    }
+}
+
+struct ListView: View {
+    let phrases : Array<String>
+    
+    var body: some View {
+        List(phrases, id: \.self) {
             Text($0)
         }
-	}
+    }
 }
 
-struct ContentView_Previews: PreviewProvider {
-	static var previews: some View {
-		ContentView()
-	}
-}
